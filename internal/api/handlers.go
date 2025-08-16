@@ -1,18 +1,15 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func PingHandler(w http.ResponseWriter, r *http.Request) {
-	response := map[string]string{
+func PingHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
 		"service": "SimpleJWT",
 		"message": "Application is running...",
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	})
 }

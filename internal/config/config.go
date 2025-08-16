@@ -5,10 +5,18 @@ import (
 	"os"
 )
 
+type Environment string
+
+const (
+	Development Environment = "development"
+	Production  Environment = "production"
+)
+
 type Config struct {
-	JWTSecret string
-	DBPath    string
-	Port      string
+	JWTSecret   string
+	DBPath      string
+	Port        string
+	Environment Environment
 }
 
 func LoadConfig() *Config {
@@ -19,9 +27,10 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		JWTSecret: jwtSecret,
-		DBPath:    getEnvWithDefault("DB_PATH", "simpleJWT.db"),
-		Port:      getEnvWithDefault("PORT", "9000"),
+		JWTSecret:   jwtSecret,
+		DBPath:      getEnvWithDefault("DB_PATH", "simpleJWT.db"),
+		Port:        getEnvWithDefault("PORT", "9000"),
+		Environment: Environment(getEnvWithDefault("ENV", "development")),
 	}
 }
 

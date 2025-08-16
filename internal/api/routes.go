@@ -1,36 +1,18 @@
 package api
 
 import (
-	"net/http"
-
-	"github.com/Kantha2004/SimpleJWT/internal/auth"
+	"github.com/Kantha2004/SimpleJWT/internal/api/handlers"
+	"github.com/gin-gonic/gin"
 )
 
-// Helper function for public routes with logging
-func registerPublicRoute(mux *http.ServeMux, path string, handler http.HandlerFunc) {
-	mux.Handle(path, LoggingMiddleware(http.HandlerFunc(handler)))
-}
+func SetupGinRoutes(router *gin.Engine, deps *Dependencies, handlerDeps *handlers.Dependencies) {
+	// Add global middleware
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 
-// Helper function for protected routes with logging + JWT
-func registerProtectedRoute(mux *http.ServeMux, path string, handler http.HandlerFunc, jwtService *auth.JWTService) {
-	mux.Handle(path, Chain(
-		http.HandlerFunc(handler),
-		LoggingMiddleware,
-		JWTMiddleware(jwtService),
-	))
-}
-
-func SetupRouters(jwtService *auth.JWTService) *http.ServeMux {
-	mux := http.NewServeMux()
-
-	// Public routes
-	publicRoutes := map[string]http.HandlerFunc{
-		"/ping": PingHandler,
+	v1 := router.Group("api/v1")
+	{
+		v1.GET("/ping", PingHandler)
+		v1.POST("/createUser", handlerDeps.CreateUser)
 	}
-
-	for path, handler := range publicRoutes {
-		registerPublicRoute(mux, path, handler)
-	}
-
-	return mux
 }
