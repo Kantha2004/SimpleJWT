@@ -1,0 +1,210 @@
+basePath: /api/v1
+definitions:
+  apiresponse.ErrorResponse:
+    properties:
+      error:
+        example: validation_error
+        type: string
+      message:
+        example: Operation completed successfully
+        type: string
+      status:
+        example: true
+        type: boolean
+    type: object
+  apiresponse.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        example: Operation completed successfully
+        type: string
+      status:
+        example: true
+        type: boolean
+    type: object
+  models.CreateUser:
+    properties:
+      email:
+        example: john@example.com
+        maxLength: 100
+        type: string
+      password:
+        example: password123
+        maxLength: 100
+        minLength: 8
+        type: string
+      username:
+        example: john_doe
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  models.CreateUserResponse:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      userId:
+        example: 1
+        type: integer
+      username:
+        example: john_doe
+        type: string
+    type: object
+  models.LoginRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: john_doe
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.LoginResponse:
+    properties:
+      expiresAt:
+        example: "2023-01-02T00:00:00Z"
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/models.UserInfo'
+    type: object
+  models.UserInfo:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      username:
+        example: john_doe
+        type: string
+    type: object
+host: localhost:9000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A simple JWT authentication service
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: SimpleJWT API
+  version: "1.0"
+paths:
+  /createUser:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account in the system
+      parameters:
+      - description: User creation data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/apiresponse.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.CreateUserResponse'
+              type: object
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/apiresponse.ErrorResponse'
+        "409":
+          description: Conflict - username or email already exists
+          schema:
+            $ref: '#/definitions/apiresponse.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apiresponse.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with username and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            allOf:
+            - $ref: '#/definitions/apiresponse.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.LoginResponse'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/apiresponse.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/apiresponse.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apiresponse.ErrorResponse'
+      summary: User login
+      tags:
+      - auth
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: Ping endpoint to check if the service is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service status response
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check endpoint
+      tags:
+      - health
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

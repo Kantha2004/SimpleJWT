@@ -18,13 +18,24 @@ func NewJWTService(secret string) *JWTService {
 }
 
 // CreateToken generates a new JWT token
-func (j *JWTService) CreateToken(userId string) (string, error) {
-	claims := jwt.MapClaims{
-		"userId": userId,
-		"exp":    time.Now().Add(time.Hour * 24).Unix(),
-		"iat":    time.Now().Unix(),
+func (j *JWTService) CreateToken(userID uint) (string, error) {
+	// Add nil checks
+	if j == nil {
+		return "", errors.New("JWT service is nil")
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	if len(j.secret) == 0 {
+		return "", errors.New("JWT secret is not configured")
+	}
+
+	// Create token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"iat":     time.Now().Unix(),
+	})
+
+	// Sign token
 	return token.SignedString(j.secret)
 }
 

@@ -14,5 +14,6 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies, handlerDeps *handler
 	{
 		v1.GET("/ping", PingHandler)
 		v1.POST("/createUser", handlerDeps.CreateUser)
+		v1.POST("/login", handlerDeps.Login)
 	}
 }
