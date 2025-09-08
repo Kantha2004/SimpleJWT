@@ -44,7 +44,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateUser"
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateUser"
                         }
                     }
                 ],
@@ -54,13 +54,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/apiresponse.SuccessResponse"
+                                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.CreateUserResponse"
+                                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateUserResponse"
                                         }
                                     }
                                 }
@@ -70,19 +70,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - validation error",
                         "schema": {
-                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict - username or email already exists",
                         "schema": {
-                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
                         }
                     }
                 }
@@ -108,7 +108,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.LoginRequest"
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.LoginRequest"
                         }
                     }
                 ],
@@ -118,13 +118,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/apiresponse.SuccessResponse"
+                                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.LoginResponse"
+                                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.LoginResponse"
                                         }
                                     }
                                 }
@@ -134,19 +134,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Invalid credentials",
                         "schema": {
-                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
                         }
                     }
                 }
@@ -175,10 +175,115 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/protected/createClient": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new user account in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Client"
+                ],
+                "summary": "Create a new user",
+                "parameters": [
+                    {
+                        "description": "Client creation data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateClient"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Client created successfully",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateClinetReponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - client name already exists",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/protected/test": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a success response if JWT is valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Protected"
+                ],
+                "summary": "Test endpoint",
+                "responses": {
+                    "201": {
+                        "description": "User created successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "apiresponse.ErrorResponse": {
+        "github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -195,7 +300,7 @@ const docTemplate = `{
                 }
             }
         },
-        "apiresponse.SuccessResponse": {
+        "github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -209,7 +314,29 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateUser": {
+        "github_com_Kantha2004_SimpleJWT_internal_models.CreateClient": {
+            "type": "object",
+            "required": [
+                "client_name"
+            ],
+            "properties": {
+                "client_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_Kantha2004_SimpleJWT_internal_models.CreateClinetReponse": {
+            "type": "object",
+            "required": [
+                "client_secret"
+            ],
+            "properties": {
+                "client_secret": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_Kantha2004_SimpleJWT_internal_models.CreateUser": {
             "type": "object",
             "required": [
                 "email",
@@ -236,7 +363,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreateUserResponse": {
+        "github_com_Kantha2004_SimpleJWT_internal_models.CreateUserResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -253,7 +380,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.LoginRequest": {
+        "github_com_Kantha2004_SimpleJWT_internal_models.LoginRequest": {
             "type": "object",
             "required": [
                 "password",
@@ -270,7 +397,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.LoginResponse": {
+        "github_com_Kantha2004_SimpleJWT_internal_models.LoginResponse": {
             "type": "object",
             "properties": {
                 "expiresAt": {
@@ -282,11 +409,11 @@ const docTemplate = `{
                     "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 },
                 "user": {
-                    "$ref": "#/definitions/models.UserInfo"
+                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.UserInfo"
                 }
             }
         },
-        "models.UserInfo": {
+        "github_com_Kantha2004_SimpleJWT_internal_models.UserInfo": {
             "type": "object",
             "properties": {
                 "email": {

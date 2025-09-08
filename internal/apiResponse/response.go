@@ -86,3 +86,7 @@ func SendUnauthorized(c *gin.Context, message string) {
 func SendConflict(c *gin.Context, message string) {
 	SendError(c, http.StatusConflict, message, "conflict")
 }
+
+func SendAlreadyExistError(c *gin.Context, message string) {
+	SendError(c, http.StatusConflict, message, "already_exists")
+}

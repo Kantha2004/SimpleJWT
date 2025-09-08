@@ -1,10 +1,12 @@
 package db
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/Kantha2004/SimpleJWT/internal/config"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -13,13 +15,25 @@ type Database struct {
 	DB *gorm.DB
 }
 
-func NewDatabase(dbPath string) (*Database, error) {
+// NewDatabase connects to PostgreSQL
+func NewDatabase(cfg *config.DBConfig) (*Database, error) {
 	config := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	}
 
-	db, err := gorm.Open(sqlite.Open(dbPath), config)
+	// PostgreSQL DSN
 
+	dsn := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.DBHost,
+		cfg.DBPort,
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBName,
+		cfg.SSLMode,
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), config)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +53,7 @@ func (d *Database) GetDB() *gorm.DB {
 
 func (d *Database) migrate() error {
 	err := d.DB.AutoMigrate(
-		&models.User{},
+		&models.AdminUser{},
 		&models.Client{},
 	)
 
@@ -47,16 +61,14 @@ func (d *Database) migrate() error {
 		return err
 	}
 
-	log.Println("Database migration completed successfully")
+	log.Println("PostgreSQL database migration completed successfully")
 	return nil
 }
 
 func (d *Database) Close() error {
-	sqliteDB, err := d.DB.DB()
-
+	sqlDB, err := d.DB.DB()
 	if err != nil {
 		return err
 	}
-
-	return sqliteDB.Close()
+	return sqlDB.Close()
 }

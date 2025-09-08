@@ -39,7 +39,7 @@ func (j *JWTService) CreateToken(userID uint) (string, error) {
 	return token.SignedString(j.secret)
 }
 
-func (j *JWTService) VerifyToken(tokenString string) (*jwt.MapClaims, error) {
+func (j *JWTService) VerifyToken(tokenString string) (jwt.MapClaims, error) {
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -56,7 +56,7 @@ func (j *JWTService) VerifyToken(tokenString string) (*jwt.MapClaims, error) {
 		return nil, errors.New("invalid token")
 	}
 
-	claims, ok := token.Claims.(*jwt.MapClaims)
+	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok {
 		return nil, errors.New("invalid token claims")

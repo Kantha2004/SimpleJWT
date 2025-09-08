@@ -8,9 +8,10 @@ import (
 )
 
 type Client struct {
-	ClientName   string `json:"client_name" gorm:"not null"`
-	ClientSecret string `json:"client_secret" gorm:"unique;not null"`
-	UserID       uint   `json:"user_id" gorm:"not null;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ClientName   string    `json:"client_name" gorm:"unique;not null"`
+	ClientSecret string    `json:"client_secret" gorm:"not null"`
+	UserID       uint      `json:"user_id" gorm:"not null"`
+	User         AdminUser `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	TableModel
 }
 
@@ -35,5 +36,8 @@ func (c *Client) BeforeCreate(tx *gorm.DB) error {
 
 type CreateClient struct {
 	ClientName string `json:"client_name" binding:"required"`
-	UserID     uint   `json:"user_id" binding:"required"`
+}
+
+type CreateClinetReponse struct {
+	ClientSecret string `json:"client_secret" binding:"required"`
 }

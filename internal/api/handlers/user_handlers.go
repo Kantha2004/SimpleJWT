@@ -63,7 +63,7 @@ func (d *Dependencies) CreateUser(c *gin.Context) {
 	}
 
 	// Create user
-	user := &models.User{
+	user := &models.AdminUser{
 		Username:     req.Username,
 		Email:        req.Email,
 		PasswordHash: hashedPassword,

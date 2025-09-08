@@ -46,7 +46,7 @@ func main() {
 
 	loadConfig := config.LoadConfig()
 
-	database, err := db.NewDatabase(loadConfig.DBPath)
+	database, err := db.NewDatabase(&loadConfig.DBConfig)
 	if err != nil {
 		log.Fatal("Error while connecting to DB", err.Error())
 	}
@@ -62,6 +62,9 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// Get port from loadConfig
+	port := ":" + loadConfig.Port
+
 	jwtService := auth.NewJWTService(loadConfig.JWTSecret)
 
 	// Add nil check
@@ -76,13 +79,14 @@ func main() {
 
 	api.SetupGinRoutes(router, deps, handlerDeps)
 
-	// Add Swagger route - notice the updated import usage
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// Get port from loadConfig
-	port := ":" + loadConfig.Port
 	fmt.Printf("SimpleJWT server starting on port %s\n", port)
-	fmt.Printf("Swagger documentation available at: http://localhost%s/swagger/index.html\n", port)
+
+	// Set swagger in development
+	if loadConfig.Environment == "development" {
+		// Add Swagger route - notice the updated import usage
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		fmt.Printf("Swagger documentation available at: http://localhost%s/swagger/index.html\n", port)
+	}
 
 	// Start server using Gin's Run method
 	log.Fatal(router.Run(port))

@@ -2,15 +2,13 @@ package models
 
 import "time"
 
-// User represents a user in the system
-type User struct {
-	ID           uint       `json:"id" gorm:"primaryKey" example:"1"`
-	Username     string     `json:"username" gorm:"unique;not null;size:50" example:"john_doe"`
-	Email        string     `json:"email" gorm:"unique;not null;size:100" example:"john@example.com"`
-	PasswordHash string     `json:"-" gorm:"not null;size:255"`
-	CreatedAt    time.Time  `json:"createdAt" example:"2023-01-01T00:00:00Z"`
-	UpdatedAt    time.Time  `json:"updatedAt" example:"2023-01-01T00:00:00Z"`
-	DeletedAt    *time.Time `json:"-" gorm:"index"`
+// AdminUser represents a user in the system
+type AdminUser struct {
+	ID           uint   `json:"id" gorm:"primaryKey" example:"1"`
+	Username     string `json:"username" gorm:"unique;not null;size:50" example:"john_doe"`
+	Email        string `json:"email" gorm:"unique;not null;size:100" example:"john@example.com"`
+	PasswordHash string `json:"-" gorm:"not null;size:255"`
+	TableModel
 }
 
 // CreateUser represents the request payload for user creation
