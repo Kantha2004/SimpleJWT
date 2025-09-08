@@ -1,3 +1,4 @@
 .env
 simpleJWT.db
 tmp
+.idea/**

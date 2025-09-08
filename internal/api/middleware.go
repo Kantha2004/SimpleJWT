@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func corsMiddleware() gin.HandlerFunc {
+func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -23,7 +23,7 @@ func corsMiddleware() gin.HandlerFunc {
 }
 
 // JWT middleware for Gin
-func jwtMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
+func JWTMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -47,7 +47,13 @@ func jwtMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
 		}
 
 		// Store user info in Gin context
-		c.Set("user_id", (*claims)["user_id"])
+		if uid, ok := claims["user_id"].(float64); ok {
+			c.Set("user_id", int(uid))
+		} else {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid user_id in token"})
+			return
+		}
+
 		c.Next()
 	}
 }
