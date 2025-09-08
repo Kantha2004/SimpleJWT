@@ -44,20 +44,25 @@ import (
 func main() {
 	_ = godotenv.Load()
 
-	config := config.LoadConfig()
+	loadConfig := config.LoadConfig()
 
-	database, err := db.NewDatabase(config.DBPath)
+	database, err := db.NewDatabase(loadConfig.DBPath)
 	if err != nil {
 		log.Fatal("Error while connecting to DB", err.Error())
 	}
-	defer database.Close()
+	defer func(database *db.Database) {
+		err := database.Close()
+		if err != nil {
+			log.Fatal("Failed to close DB connection")
+		}
+	}(database)
 
 	// Set Gin to release mode in production
-	if config.Environment == "production" {
+	if loadConfig.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	jwtService := auth.NewJWTService(config.JWTSecret)
+	jwtService := auth.NewJWTService(loadConfig.JWTSecret)
 
 	// Add nil check
 	if jwtService == nil {
@@ -74,8 +79,8 @@ func main() {
 	// Add Swagger route - notice the updated import usage
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Get port from config
-	port := ":" + config.Port
+	// Get port from loadConfig
+	port := ":" + loadConfig.Port
 	fmt.Printf("SimpleJWT server starting on port %s\n", port)
 	fmt.Printf("Swagger documentation available at: http://localhost%s/swagger/index.html\n", port)
 
