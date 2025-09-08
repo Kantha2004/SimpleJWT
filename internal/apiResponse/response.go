@@ -64,7 +64,7 @@ func NewSuccessResponse(data interface{}, msg string) SuccessResponse {
 
 // Helper methods for common responses
 func SendError(c *gin.Context, statusCode int, message string, errorCode ...string) {
-	c.JSON(statusCode, NewErrorResponse(message, errorCode...))
+	c.AbortWithStatusJSON(statusCode, NewErrorResponse(message, errorCode...))
 }
 
 func SendSuccess(c *gin.Context, statusCode int, data interface{}, message string) {

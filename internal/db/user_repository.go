@@ -22,7 +22,7 @@ func (ur *UserRepository) CreateUser(user *models.AdminUser) (uint, error) {
 
 func (ur *UserRepository) GetUserByID(id uint) (*models.AdminUser, error) {
 	var user models.AdminUser
-	result := ur.db.DB.Find(&user, id)
+	result := ur.db.DB.First(&user, id)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil

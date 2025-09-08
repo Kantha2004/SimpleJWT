@@ -81,10 +81,15 @@ func main() {
 
 	fmt.Printf("SimpleJWT server starting on port %s\n", port)
 
+	url := ginSwagger.URL("http://localhost:9000/swagger/doc.json")
+
 	// Set swagger in development
 	if loadConfig.Environment == "development" {
 		// Add Swagger route - notice the updated import usage
-		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(
+			swaggerFiles.Handler, url,
+			ginSwagger.PersistAuthorization(true),
+		))
 		fmt.Printf("Swagger documentation available at: http://localhost%s/swagger/index.html\n", port)
 	}
 

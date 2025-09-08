@@ -22,6 +22,38 @@ definitions:
         example: true
         type: boolean
     type: object
+  github_com_Kantha2004_SimpleJWT_internal_models.Client:
+    properties:
+      client_name:
+        type: string
+      client_secret:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      schema_name:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_Kantha2004_SimpleJWT_internal_models.ClientUser:
+    properties:
+      created_at:
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      id:
+        type: integer
+      updated_at:
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
   github_com_Kantha2004_SimpleJWT_internal_models.CreateClient:
     properties:
       client_name:
@@ -29,12 +61,37 @@ definitions:
     required:
     - client_name
     type: object
-  github_com_Kantha2004_SimpleJWT_internal_models.CreateClinetReponse:
+  github_com_Kantha2004_SimpleJWT_internal_models.CreateClientReponse:
     properties:
       client_secret:
         type: string
     required:
     - client_secret
+    type: object
+  github_com_Kantha2004_SimpleJWT_internal_models.CreateClientUser:
+    properties:
+      client_id:
+        example: 1
+        type: integer
+      email:
+        example: john@example.com
+        maxLength: 100
+        type: string
+      password:
+        example: password123
+        maxLength: 100
+        minLength: 8
+        type: string
+      username:
+        example: john_doe
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - client_id
+    - email
+    - password
+    - username
     type: object
   github_com_Kantha2004_SimpleJWT_internal_models.CreateUser:
     properties:
@@ -234,7 +291,7 @@ paths:
             - $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateClinetReponse'
+                  $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateClientReponse'
               type: object
         "400":
           description: Bad request - validation error
@@ -251,6 +308,87 @@ paths:
       security:
       - BearerAuth: []
       summary: Create a new user
+      tags:
+      - Client
+  /protected/createClientUser:
+    post:
+      consumes:
+      - application/json
+      description: Create and add a new user account to the client
+      parameters:
+      - description: User creation data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateClientUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.ClientUser'
+              type: object
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse'
+        "409":
+          description: Conflict - username or email already exists
+          schema:
+            $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new ClientUser
+      tags:
+      - Client
+  /protected/getAllClients:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all clients belonging to the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved all clients
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.Client'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid user
+          schema:
+            $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse'
+        "404":
+          description: No clients found
+          schema:
+            $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all clients associated with the user
       tags:
       - Client
   /protected/test:

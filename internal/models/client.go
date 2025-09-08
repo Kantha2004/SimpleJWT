@@ -11,7 +11,8 @@ type Client struct {
 	ClientName   string    `json:"client_name" gorm:"unique;not null"`
 	ClientSecret string    `json:"client_secret" gorm:"not null"`
 	UserID       uint      `json:"user_id" gorm:"not null"`
-	User         AdminUser `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	User         AdminUser `json:"-" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SchemaName   string    `json:"schema_name" gorm:"not null"`
 	TableModel
 }
 
@@ -38,6 +39,6 @@ type CreateClient struct {
 	ClientName string `json:"client_name" binding:"required"`
 }
 
-type CreateClinetReponse struct {
+type CreateClientReponse struct {
 	ClientSecret string `json:"client_secret" binding:"required"`
 }

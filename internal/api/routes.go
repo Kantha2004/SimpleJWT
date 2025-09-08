@@ -35,7 +35,10 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies, handlerDeps *handler
 
 	v1 := router.Group("api/v1")
 	{
+		// GET Methods
 		v1.GET("/ping", PingHandler)
+
+		// POST Methods
 		v1.POST("/createUser", handlerDeps.CreateUser)
 		v1.POST("/login", handlerDeps.Login)
 	}
@@ -43,7 +46,12 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies, handlerDeps *handler
 	protected := router.Group("api/v1/protected")
 	protected.Use(JWTMiddleware(deps.JWTService))
 	{
+		// GET Methods
 		protected.GET("/test", testHandler)
+		protected.GET("/getAllClients", handlerDeps.GetAllClients)
+
+		// POST Methods
 		protected.POST("/createClient", handlerDeps.CreateClient)
+		protected.POST("/createClientUser", handlerDeps.CreateClientUser)
 	}
 }

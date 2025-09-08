@@ -9,6 +9,7 @@ import (
 	"github.com/Kantha2004/SimpleJWT/internal/auth"
 	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
+	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,8 +28,7 @@ import (
 func (d *Dependencies) CreateUser(c *gin.Context) {
 	var req models.CreateUser
 
-	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
-		apiresponse.SendValidationError(c, err)
+	if verified := utils.VerifyRequestModel(c, &req); !verified {
 		return
 	}
 
@@ -101,8 +101,7 @@ func (d *Dependencies) CreateUser(c *gin.Context) {
 func (d *Dependencies) Login(c *gin.Context) {
 	var req models.LoginRequest
 
-	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
-		apiresponse.SendValidationError(c, err)
+	if verified := utils.VerifyRequestModel(c, &req); !verified {
 		return
 	}
 

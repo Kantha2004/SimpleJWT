@@ -72,3 +72,7 @@ func (d *Database) Close() error {
 	}
 	return sqlDB.Close()
 }
+
+func (d *Database) TableWithSchema(schema, table string) *gorm.DB {
+	return d.DB.Table(fmt.Sprintf("%s.%s", schema, table))
+}

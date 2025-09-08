@@ -16,7 +16,7 @@ import (
 // @Router /ping [get]
 func PingHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"status":  "ok",
+		"status":  true,
 		"service": "SimpleJWT",
 		"message": "Application is running...",
 	})
