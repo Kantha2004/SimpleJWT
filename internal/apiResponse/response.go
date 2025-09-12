@@ -90,3 +90,7 @@ func SendConflict(c *gin.Context, message string) {
 func SendAlreadyExistError(c *gin.Context, message string) {
 	SendError(c, http.StatusConflict, message, "already_exists")
 }
+
+func SendNotFound(c *gin.Context, message string) {
+	SendError(c, http.StatusNotFound, message, "not_found")
+}

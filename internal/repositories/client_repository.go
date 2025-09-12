@@ -1,17 +1,18 @@
-package db
+package repositories
 
 import (
 	"errors"
 
+	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
 	"gorm.io/gorm"
 )
 
 type ClientRepository struct {
-	db *Database
+	db *db.Database
 }
 
-func NewClientRepository(db *Database) *ClientRepository {
+func NewClientRepository(db *db.Database) *ClientRepository {
 	return &ClientRepository{db: db}
 }
 
@@ -20,9 +21,24 @@ func (cr *ClientRepository) CreateClient(client *models.Client) (string, error) 
 	return client.ClientSecret, result.Error
 }
 
-func (cr *ClientRepository) GetClientId(id uint) (*models.Client, error) {
+func (cr *ClientRepository) GetClientById(id uint) (*models.Client, error) {
 	var client models.Client
 	result := cr.db.DB.First(&client, id)
+	return &client, result.Error
+}
+
+func (cr *ClientRepository) GetClientBySecret(client_secret string) (*models.Client, error) {
+	var client models.Client
+	result := cr.db.DB.Where("client_name = ?", client_secret).First(&client)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
 	return &client, result.Error
 }
 
@@ -58,8 +74,8 @@ func (cr *ClientRepository) GetClientByUserId(userID uint) (*models.Client, erro
 	return &client, nil
 }
 
-func (cr *ClientRepository) GetAllClientsByUserId(userID uint) ([]models.Client, error) {
-	var clients []models.Client
+func (cr *ClientRepository) GetAllClientsByUserId(userID uint) ([]*models.Client, error) {
+	var clients []*models.Client
 
 	result := cr.db.DB.Where("user_id = ?", userID).Find(&clients)
 

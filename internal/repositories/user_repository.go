@@ -1,17 +1,18 @@
-package db
+package repositories
 
 import (
 	"errors"
 
+	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
 	"gorm.io/gorm"
 )
 
 type UserRepository struct {
-	db *Database
+	db *db.Database
 }
 
-func NewUserRepository(db *Database) *UserRepository {
+func NewUserRepository(db *db.Database) *UserRepository {
 	return &UserRepository{db: db}
 }
 

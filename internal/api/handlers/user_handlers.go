@@ -1,17 +1,26 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
-	"time"
 
+	"github.com/Kantha2004/SimpleJWT/internal/api/services"
 	apiresponse "github.com/Kantha2004/SimpleJWT/internal/apiResponse"
-	"github.com/Kantha2004/SimpleJWT/internal/auth"
-	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
 	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
+
+type UserHandler struct {
+	userService services.UserService
+	authService services.AuthService
+}
+
+func NewUserHandler(userService services.UserService, authService services.AuthService) *UserHandler {
+	return &UserHandler{
+		userService: userService,
+		authService: authService,
+	}
+}
 
 // CreateUser godoc
 // @Summary Create a new user
@@ -25,65 +34,19 @@ import (
 // @Failure 409 {object} apiresponse.ErrorResponse "Conflict - username or email already exists"
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /createUser [post]
-func (d *Dependencies) CreateUser(c *gin.Context) {
+func (h *UserHandler) CreateUser(c *gin.Context) {
 	var req models.CreateUser
-
-	if verified := utils.VerifyRequestModel(c, &req); !verified {
+	if !utils.VerifyRequestModel(c, &req) {
 		return
 	}
 
-	userRepo := db.NewUserRepository(d.DB)
-
-	// Check if username exists
-	if exists, err := userRepo.UserNameExists(req.Username); err != nil {
-		log.Printf("Error checking username existence: %v", err)
-		apiresponse.SendInternalError(c, "Failed to validate username")
-		return
-	} else if exists {
-		apiresponse.SendConflict(c, "Username already exists")
-		return
-	}
-
-	// Check if email exists
-	if exists, err := userRepo.EmailExists(req.Email); err != nil {
-		log.Printf("Error checking email existence: %v", err)
-		apiresponse.SendInternalError(c, "Failed to validate email")
-		return
-	} else if exists {
-		apiresponse.SendConflict(c, "Email already exists")
-		return
-	}
-
-	// Hash password
-	hashedPassword, err := auth.HashPassword(req.Password)
+	user, err := h.userService.CreateUser(req)
 	if err != nil {
-		log.Printf("Error hashing password: %v", err)
-		apiresponse.SendInternalError(c, "Failed to process password")
+		handleServiceError(c, err, "Failed to create user")
 		return
 	}
 
-	// Create user
-	user := &models.AdminUser{
-		Username:     req.Username,
-		Email:        req.Email,
-		PasswordHash: hashedPassword,
-	}
-
-	userId, err := userRepo.CreateUser(user)
-	if err != nil {
-		log.Printf("Error creating user: %v", err)
-		apiresponse.SendInternalError(c, "Failed to create user")
-		return
-	}
-
-	// Prepare response data
-	responseData := models.CreateUserResponse{
-		UserID:   userId,
-		Username: req.Username,
-		Email:    req.Email,
-	}
-
-	apiresponse.SendSuccess(c, http.StatusCreated, responseData, "User created successfully")
+	apiresponse.SendSuccess(c, http.StatusCreated, user, "User created successfully")
 }
 
 // Login godoc
@@ -98,48 +61,17 @@ func (d *Dependencies) CreateUser(c *gin.Context) {
 // @Failure 401 {object} apiresponse.ErrorResponse "Invalid credentials"
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /login [post]
-func (d *Dependencies) Login(c *gin.Context) {
+func (h *UserHandler) Login(c *gin.Context) {
 	var req models.LoginRequest
-
-	if verified := utils.VerifyRequestModel(c, &req); !verified {
+	if !utils.VerifyRequestModel(c, &req) {
 		return
 	}
 
-	userRepo := db.NewUserRepository(d.DB)
-
-	// Get user by username
-	user, err := userRepo.GetUserByUsername(req.Username)
+	response, err := h.userService.AuthenticateUser(req)
 	if err != nil {
-		log.Printf("Error fetching user: %v", err)
-		apiresponse.SendInternalError(c, "Authentication failed")
+		handleServiceError(c, err, "Authentication failed")
 		return
 	}
 
-	// Check user existence and password in one step for security
-	if user == nil || !auth.CheckPassword(user.PasswordHash, req.Password) {
-		apiresponse.SendUnauthorized(c, "Invalid username or password")
-		return
-	}
-
-	// Generate JWT token
-	token, err := d.jwtService.CreateToken(user.ID)
-	if err != nil {
-		log.Printf("Error creating token: %v", err)
-		apiresponse.SendInternalError(c, "Authentication failed")
-		return
-	}
-
-	// Prepare response
-	expiresAt := time.Now().Add(time.Hour * 24) // Match your JWT expiration
-	responseData := models.LoginResponse{
-		Token:     token,
-		ExpiresAt: expiresAt,
-		User: models.UserInfo{
-			ID:       user.ID,
-			Username: user.Username,
-			Email:    user.Email,
-		},
-	}
-
-	apiresponse.SendSuccess(c, http.StatusOK, responseData, "Login successful")
+	apiresponse.SendSuccess(c, http.StatusOK, response, "Login successful")
 }

@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/Kantha2004/SimpleJWT/internal/api"
-	"github.com/Kantha2004/SimpleJWT/internal/api/handlers"
 	"github.com/Kantha2004/SimpleJWT/internal/auth"
 	"github.com/Kantha2004/SimpleJWT/internal/config"
 	"github.com/Kantha2004/SimpleJWT/internal/db"
@@ -72,19 +71,19 @@ func main() {
 		log.Fatal("Failed to create JWT service")
 	}
 
-	deps := api.NewDependencies(jwtService)
-	handlerDeps := handlers.NewDependencies(database, jwtService)
+	deps := api.NewDependencies(database, jwtService)
+	// handlerDeps := handlers.NewDependencies(database, jwtService)
 
 	router := gin.Default()
 
-	api.SetupGinRoutes(router, deps, handlerDeps)
+	api.SetupGinRoutes(router, deps)
 
 	fmt.Printf("SimpleJWT server starting on port %s\n", port)
 
 	url := ginSwagger.URL("http://localhost:9000/swagger/doc.json")
 
 	// Set swagger in development
-	if loadConfig.Environment == "development" {
+	if loadConfig.Environment == config.Development {
 		// Add Swagger route - notice the updated import usage
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(
 			swaggerFiles.Handler, url,

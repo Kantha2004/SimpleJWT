@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	apiresponse "github.com/Kantha2004/SimpleJWT/internal/apiResponse"
-	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
+	"github.com/Kantha2004/SimpleJWT/internal/repositories"
 	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +20,7 @@ const (
 // ValidateUser fetches and validates user existence
 // Returns the user if found, otherwise returns an error
 func (d *Dependencies) ValidateUser(userID uint) (*models.AdminUser, error) {
-	userRepo := db.NewUserRepository(d.DB)
+	userRepo := repositories.NewUserRepository(d.DB)
 	user, err := userRepo.GetUserByID(userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch user: %w", err)
