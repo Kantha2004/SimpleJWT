@@ -1,16 +1,27 @@
+// internal/handlers/client_handler.go
 package handlers
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 
+	"github.com/Kantha2004/SimpleJWT/internal/api/services"
 	apiresponse "github.com/Kantha2004/SimpleJWT/internal/apiResponse"
-	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
 	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
+
+type ClientHandler struct {
+	clientService services.ClientService
+	authService   services.AuthService
+}
+
+func NewClientHandler(clientService services.ClientService, authService services.AuthService) *ClientHandler {
+	return &ClientHandler{
+		clientService: clientService,
+		authService:   authService,
+	}
+}
 
 // CreateUser godoc
 // @Summary Create a new user
@@ -25,67 +36,21 @@ import (
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /protected/createClient [post]
 // @Security BearerAuth
-func (d *Dependencies) CreateClient(c *gin.Context) {
+func (h *ClientHandler) CreateClient(c *gin.Context) {
 	var req models.CreateClient
-
-	// Validate request body
-	if verified := utils.VerifyRequestModel(c, &req); !verified {
+	if !utils.VerifyRequestModel(c, &req) {
 		return
 	}
 
-	user, ok := d.ValidateUserFromContext(c)
-
+	user, ok := h.authService.ValidateUserFromContext(c)
 	if !ok {
 		return
 	}
 
-	userID := user.ID
-
-	// Check if client name already exists for this user
-	clientRepo := db.NewClientRepository(d.DB)
-	exists, err := clientRepo.GetClientByNameForUser(req.ClientName, userID)
+	response, err := h.clientService.CreateClient(req, user)
 	if err != nil {
-		log.Printf("Error checking client existence: %v", err)
-		apiresponse.SendInternalError(c, "Error validating client name")
+		handleServiceError(c, err, "Failed to create client")
 		return
-	}
-
-	if exists != nil {
-		log.Printf("Client name '%s' already exists for user ID %d", req.ClientName, userID)
-		apiresponse.SendAlreadyExistError(c, "Client name already exists")
-		return
-	}
-
-	// Create client
-	schemaName := fmt.Sprintf("%s_%s_client", user.Username, req.ClientName)
-	client := &models.Client{
-		ClientName: req.ClientName,
-		UserID:     userID,
-		SchemaName: schemaName,
-	}
-
-	clientSecret, err := clientRepo.CreateClient(client)
-	if err != nil {
-		log.Printf("Error creating client: %v", err)
-		apiresponse.SendInternalError(c, "Failed to create client")
-		return
-	}
-
-	// Create client schema and migrate tables
-	if err := d.DB.CreateClientSchema(schemaName); err != nil {
-		log.Printf("Error creating client schema: %v", err)
-		apiresponse.SendInternalError(c, "Failed to initialize client schema")
-		return
-	}
-
-	if err := d.DB.MigrateClientTables(schemaName); err != nil {
-		log.Printf("Error migrating client tables: %v", err)
-		apiresponse.SendInternalError(c, "Failed to migrate client tables")
-		return
-	}
-
-	response := models.CreateClientReponse{
-		ClientSecret: clientSecret,
 	}
 
 	apiresponse.SendSuccess(c, http.StatusCreated, response, "Client created successfully")
@@ -104,29 +69,15 @@ func (d *Dependencies) CreateClient(c *gin.Context) {
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /protected/getAllClients [get]
 // @Security BearerAuth
-func (d *Dependencies) GetAllClients(c *gin.Context) {
-
-	user, ok := d.ValidateUserFromContext(c)
-
+func (h *ClientHandler) GetAllClients(c *gin.Context) {
+	user, ok := h.authService.ValidateUserFromContext(c)
 	if !ok {
 		return
 	}
 
-	userID := user.ID
-
-	// Fetch all clients for the user
-	clientRepo := db.NewClientRepository(d.DB)
-	clients, err := clientRepo.GetAllClientsByUserId(userID)
-
+	clients, err := h.clientService.GetAllClientsByUser(user.ID)
 	if err != nil {
-		log.Printf("Error fetching clients for user ID %d: %v", userID, err)
-		apiresponse.SendInternalError(c, "Error fetching clients")
-		return
-	}
-
-	// Handle empty results
-	if len(clients) == 0 {
-		apiresponse.SendError(c, http.StatusNotFound, "No clients found")
+		handleServiceError(c, err, "Error fetching clients")
 		return
 	}
 

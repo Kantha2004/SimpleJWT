@@ -24,6 +24,81 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/client/userlogin": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Authenticate and login a client user with username/password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Client"
+                ],
+                "summary": "Authenticate a client user",
+                "parameters": [
+                    {
+                        "description": "User login data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ClientUserLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/apiresponse.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.LoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - validation error",
+                        "schema": {
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Client not found",
+                        "schema": {
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/createUser": {
             "post": {
                 "description": "Create a new user account in the system",
@@ -44,7 +119,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateUser"
+                            "$ref": "#/definitions/models.CreateUser"
                         }
                     }
                 ],
@@ -54,13 +129,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse"
+                                    "$ref": "#/definitions/apiresponse.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateUserResponse"
+                                            "$ref": "#/definitions/models.CreateUserResponse"
                                         }
                                     }
                                 }
@@ -70,19 +145,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict - username or email already exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     }
                 }
@@ -108,7 +183,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.LoginRequest"
+                            "$ref": "#/definitions/models.LoginRequest"
                         }
                     }
                 ],
@@ -118,13 +193,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse"
+                                    "$ref": "#/definitions/apiresponse.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.LoginResponse"
+                                            "$ref": "#/definitions/models.LoginResponse"
                                         }
                                     }
                                 }
@@ -134,19 +209,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Invalid credentials",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     }
                 }
@@ -201,7 +276,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateClient"
+                            "$ref": "#/definitions/models.CreateClient"
                         }
                     }
                 ],
@@ -211,13 +286,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse"
+                                    "$ref": "#/definitions/apiresponse.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateClientReponse"
+                                            "$ref": "#/definitions/models.CreateClientReponse"
                                         }
                                     }
                                 }
@@ -227,19 +302,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict - client name already exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     }
                 }
@@ -270,7 +345,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.CreateClientUser"
+                            "$ref": "#/definitions/models.CreateClientUser"
                         }
                     }
                 ],
@@ -280,13 +355,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse"
+                                    "$ref": "#/definitions/apiresponse.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.ClientUser"
+                                            "$ref": "#/definitions/models.ClientUser"
                                         }
                                     }
                                 }
@@ -296,19 +371,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict - username or email already exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     }
                 }
@@ -338,7 +413,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse"
+                                    "$ref": "#/definitions/apiresponse.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -346,7 +421,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.Client"
+                                                "$ref": "#/definitions/models.Client"
                                             }
                                         }
                                     }
@@ -357,25 +432,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized - invalid user",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "No clients found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse"
+                            "$ref": "#/definitions/apiresponse.ErrorResponse"
                         }
                     }
                 }
@@ -400,8 +475,8 @@ const docTemplate = `{
                 ],
                 "summary": "Test endpoint",
                 "responses": {
-                    "201": {
-                        "description": "User created successfully",
+                    "200": {
+                        "description": "Test successful",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -419,7 +494,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_Kantha2004_SimpleJWT_internal_apiResponse.ErrorResponse": {
+        "apiresponse.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -436,7 +511,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_apiResponse.SuccessResponse": {
+        "apiresponse.SuccessResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -450,7 +525,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.Client": {
+        "models.Client": {
             "type": "object",
             "properties": {
                 "client_name": {
@@ -476,7 +551,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.ClientUser": {
+        "models.ClientUser": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -498,7 +573,29 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.CreateClient": {
+        "models.ClientUserLoginRequest": {
+            "type": "object",
+            "required": [
+                "client_secret",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "client_secret": {
+                    "type": "string",
+                    "example": "asdadsdasdsadasd"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "password123"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "models.CreateClient": {
             "type": "object",
             "required": [
                 "client_name"
@@ -509,7 +606,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.CreateClientReponse": {
+        "models.CreateClientReponse": {
             "type": "object",
             "required": [
                 "client_secret"
@@ -520,7 +617,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.CreateClientUser": {
+        "models.CreateClientUser": {
             "type": "object",
             "required": [
                 "client_id",
@@ -531,7 +628,7 @@ const docTemplate = `{
             "properties": {
                 "client_id": {
                     "type": "integer",
-                    "example": 1
+                    "example": 0
                 },
                 "email": {
                     "type": "string",
@@ -552,7 +649,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.CreateUser": {
+        "models.CreateUser": {
             "type": "object",
             "required": [
                 "email",
@@ -579,7 +676,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.CreateUserResponse": {
+        "models.CreateUserResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -596,7 +693,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.LoginRequest": {
+        "models.LoginRequest": {
             "type": "object",
             "required": [
                 "password",
@@ -613,7 +710,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.LoginResponse": {
+        "models.LoginResponse": {
             "type": "object",
             "properties": {
                 "expiresAt": {
@@ -625,11 +722,11 @@ const docTemplate = `{
                     "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_Kantha2004_SimpleJWT_internal_models.UserInfo"
+                    "$ref": "#/definitions/models.UserInfo"
                 }
             }
         },
-        "github_com_Kantha2004_SimpleJWT_internal_models.UserInfo": {
+        "models.UserInfo": {
             "type": "object",
             "properties": {
                 "email": {
