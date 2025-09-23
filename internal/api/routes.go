@@ -39,18 +39,17 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies) {
 	// Initialize services
 	userRepo := repositories.NewUserRepository(deps.DB)
 	clientRepo := repositories.NewClientRepository(deps.DB)
-	// clientUserRepo := repositories.NewClientUserRepository(deps.DB, "")
 
 	// Initialize services with dependencies
 	userService := services.NewUserService(userRepo, deps.JWTService)
 	clientService := services.NewClientService(clientRepo, deps.DB)
-	// clientUserService := services.NewClientUserService(clientRepo, clientUserRepo, deps.JWTService)
 	authService := services.NewAuthService(userService)
 
 	// Initialize handlers with services
 	userHandler := handlers.NewUserHandler(userService, authService)
 	clientHandler := handlers.NewClientHandler(clientService, authService)
-	// clientUserHandler := handlers.NewClientUserHandler(clientUserService, authService, deps.JWTService)
+
+	clientUserHandler := handlers.NewClientUserHandler(deps.DB, deps.JWTService)
 
 	v1 := router.Group("api/v1")
 	{
@@ -63,9 +62,9 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies) {
 	}
 
 	// Client routes (public)
-	// client := router.Group("api/v1/client")
+	client := router.Group("api/v1/client")
 	{
-		// client.POST("/userlogin", clientUserHandler.ClientUserLogin)
+		client.POST("/userlogin", clientUserHandler.ClientUserLogin)
 	}
 
 	// Protected routes
@@ -78,6 +77,6 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies) {
 
 		// POST Methods
 		protected.POST("/createClient", clientHandler.CreateClient)
-		// protected.POST("/createClientUser", clientUserHandler.CreateClientUser)
+		protected.POST("/createClientUser", clientUserHandler.CreateClientUser)
 	}
 }

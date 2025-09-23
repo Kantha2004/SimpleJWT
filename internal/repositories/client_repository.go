@@ -24,12 +24,21 @@ func (cr *ClientRepository) CreateClient(client *models.Client) (string, error) 
 func (cr *ClientRepository) GetClientById(id uint) (*models.Client, error) {
 	var client models.Client
 	result := cr.db.DB.First(&client, id)
-	return &client, result.Error
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &client, nil
 }
 
 func (cr *ClientRepository) GetClientBySecret(client_secret string) (*models.Client, error) {
 	var client models.Client
-	result := cr.db.DB.Where("client_name = ?", client_secret).First(&client)
+	result := cr.db.DB.Where("client_secret = ?", client_secret).First(&client)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil

@@ -14,16 +14,16 @@ type ClientUserService interface {
 }
 
 type clientUserService struct {
-	clientRepo     repositories.ClientRepository
-	clientUserRepo repositories.ClientUserRepository
-	jwtService     auth.JWTService
+	clientRepo     *repositories.ClientRepository
+	clientUserRepo *repositories.ClientUserRepository
+	jwtService     *auth.JWTService
 }
 
 // NewClientUserService creates a new instance of ClientUserService
 func NewClientUserService(
-	clientRepo repositories.ClientRepository,
-	clientUserRepo repositories.ClientUserRepository,
-	jwtService auth.JWTService,
+	clientRepo *repositories.ClientRepository,
+	clientUserRepo *repositories.ClientUserRepository,
+	jwtService *auth.JWTService,
 ) ClientUserService {
 	return &clientUserService{
 		clientRepo:     clientRepo,
@@ -72,6 +72,7 @@ func (s *clientUserService) CreateUser(req models.CreateClientUser) (*models.Cli
 
 	// Save user
 	user, err := s.clientUserRepo.CreateClientUser(userModel)
+
 	if err != nil {
 		return nil, NewInternalError("Failed to create user", err)
 	}

@@ -1,18 +1,29 @@
 package handlers
 
 import (
-	"errors"
-	"fmt"
-	"log"
 	"net/http"
 
+	"github.com/Kantha2004/SimpleJWT/internal/api/services"
 	apiresponse "github.com/Kantha2004/SimpleJWT/internal/apiResponse"
 	"github.com/Kantha2004/SimpleJWT/internal/auth"
+	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
 	"github.com/Kantha2004/SimpleJWT/internal/repositories"
 	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
+
+type ClientUserHandler struct {
+	DB         *db.Database
+	jwtService *auth.JWTService
+}
+
+func NewClientUserHandler(db *db.Database, authService *auth.JWTService) *ClientUserHandler {
+	return &ClientUserHandler{
+		DB:         db,
+		jwtService: authService,
+	}
+}
 
 // CreateClientUser godoc
 // @Summary Create a new ClientUser
@@ -27,80 +38,38 @@ import (
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /protected/createClientUser [post]
 // @Security BearerAuth
-func (d *Dependencies) CreateClientUser(c *gin.Context) {
+func (d *ClientUserHandler) CreateClientUser(c *gin.Context) {
 	var req models.CreateClientUser
 
-	if verified := utils.VerifyRequestModel(c, &req); !verified {
+	if ok := utils.VerifyRequestModel(c, &req); !ok {
 		return
 	}
 
 	clientRepo := repositories.NewClientRepository(d.DB)
 
-	_, ok := d.ValidateUserFromContext(c)
-
-	if !ok {
-		return
-	}
-
 	client, err := clientRepo.GetClientById(req.ClientID)
 
 	if err != nil {
-		apiresponse.SendInternalError(c, "Internal Server Error")
-		return
+		apiresponse.SendInternalError(c, err.Error())
 	}
 
 	if client == nil {
-		apiresponse.SendValidationError(c, errors.New("Client Not Found"))
-		return
+		apiresponse.SendNotFound(c, "Client not found")
 	}
 
-	clientUserRepo := repositories.NewClientUserRepository(d.DB, client.SchemaName)
+	service := services.NewClientUserService(
+		clientRepo,
+		repositories.NewClientUserRepository(d.DB, client.SchemaName),
+		d.jwtService,
+	)
 
-	// Check if username exists
-	if exists, err := clientUserRepo.ClientUserNameExists(req.Username); err != nil {
-		log.Printf("Error checking username existence: %v", err)
-		apiresponse.SendInternalError(c, "Failed to validate username")
-		return
-	} else if exists {
-		apiresponse.SendConflict(c, "Username already exists")
-		return
-	}
-
-	// Check if email exists
-	if exists, err := clientUserRepo.ClientUserEmailExists(req.Email); err != nil {
-		log.Printf("Error checking email existence: %v", err)
-		apiresponse.SendInternalError(c, "Failed to validate email")
-		return
-	} else if exists {
-		apiresponse.SendConflict(c, "Email already exists")
-		return
-	}
-
-	// Hash password
-	hashedPassword, err := auth.HashPassword(req.Password)
+	user, err := service.CreateUser(req)
 	if err != nil {
-		log.Printf("Error hashing password: %v", err)
-		apiresponse.SendInternalError(c, "Failed to process password")
+		handleServiceError(c, err, "")
 		return
 	}
 
-	// Create ClientUser
-	clientUserModel := &models.ClientUser{
-		Username:     req.Username,
-		Email:        req.Email,
-		PasswordHash: hashedPassword,
-	}
-
-	clientUser, err := clientUserRepo.CreateClientUser(clientUserModel)
-
-	if err != nil {
-		log.Printf("Error creating user: %v", err)
-		apiresponse.SendInternalError(c, "Failed to create user")
-		return
-	}
-
-	apiresponse.SendSuccess(c, http.StatusCreated, clientUser, "User successfully added")
-
+	apiresponse.SendSuccess(c, http.StatusCreated, user, "User successfully added")
 }
 
 // ClientUserLogin godoc
@@ -117,104 +86,37 @@ func (d *Dependencies) CreateClientUser(c *gin.Context) {
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /client/userlogin [post]
 // @Security BearerAuth
-func (d *Dependencies) ClientUserLogin(c *gin.Context) {
+func (d *ClientUserHandler) ClientUserLogin(c *gin.Context) {
 	var req models.ClientUserLoginRequest
 
-	// Validate request model
 	if ok := utils.VerifyRequestModel(c, &req); !ok {
 		return
 	}
 
-	// Validate client exists
-	client, err := d.validateClient(c, req.ClientSecret)
-	if err != nil || client == nil {
-		return
-	}
-
-	// Authenticate user
-	user, err := d.authenticateUser(c, client.SchemaName, req.Username, req.Password)
-	if err != nil || user == nil {
-		return
-	}
-
-	// Generate JWT token
-	token, err := d.generateUserToken(c, user.ID)
-	if err != nil {
-		return
-	}
-
-	// Build and send response
-	d.sendLoginResponse(c, user, token)
-}
-
-// validateClient validates that the client exists
-func (d *Dependencies) validateClient(c *gin.Context, client_secret string) (*models.Client, error) {
 	clientRepo := repositories.NewClientRepository(d.DB)
-	client, err := clientRepo.GetClientBySecret(client_secret)
+
+	client, err := clientRepo.GetClientBySecret(req.ClientSecret)
 
 	if err != nil {
-		log.Printf("Error retrieving client %s: %v", client_secret, err)
-		apiresponse.SendInternalError(c, "Internal Server Error")
-		return nil, err
+		apiresponse.SendInternalError(c, err.Error())
 	}
 
 	if client == nil {
 		apiresponse.SendNotFound(c, "Client not found")
-		return nil, fmt.Errorf("client not found: %s", client_secret)
 	}
 
-	return client, nil
-}
+	service := services.NewClientUserService(
+		clientRepo,
+		repositories.NewClientUserRepository(d.DB, client.SchemaName),
+		d.jwtService,
+	)
 
-// authenticateUser validates user credentials
-func (d *Dependencies) authenticateUser(c *gin.Context, schemaName, username, password string) (*models.ClientUser, error) {
-	clientUserRepo := repositories.NewClientUserRepository(d.DB, schemaName)
+	loginResp, err := service.AuthenticateUser(req)
 
-	user, err := clientUserRepo.GetClientUserByUsername(username)
 	if err != nil {
-		log.Printf("Error retrieving user %s from schema %s: %v", username, schemaName, err)
-		apiresponse.SendInternalError(c, "Failed to validate user")
-		return nil, err
+		handleServiceError(c, err, "")
+		return
 	}
 
-	if user == nil {
-		apiresponse.SendUnauthorized(c, "Invalid username or password")
-		return nil, fmt.Errorf("user not found: %s", username)
-	}
-
-	if !auth.CheckPassword(user.PasswordHash, password) {
-		apiresponse.SendUnauthorized(c, "Invalid username or password")
-		return nil, fmt.Errorf("invalid password for user: %s", username)
-	}
-
-	return user, nil
-}
-
-// generateUserToken creates a JWT token for the authenticated user
-func (d *Dependencies) generateUserToken(c *gin.Context, userID uint) (string, error) {
-	token, err := d.jwtService.CreateToken(userID)
-	if err != nil {
-		log.Printf("Error generating token for user ID %s: %v", userID, err)
-		apiresponse.SendInternalError(c, "Unable to generate authentication token")
-		return "", err
-	}
-
-	return token, nil
-}
-
-// sendLoginResponse builds and sends the successful login response
-func (d *Dependencies) sendLoginResponse(c *gin.Context, user *models.ClientUser, token string) {
-	userInfo := models.UserInfo{
-		ID:       user.ID,
-		Username: user.Username,
-		Email:    user.Email,
-	}
-
-	response := &models.LoginResponse{
-		User:      userInfo,
-		Token:     token,
-		ExpiresAt: utils.GetExpiryTime(),
-	}
-
-	apiresponse.SendSuccess(c, http.StatusOK, response, "Login successful")
+	apiresponse.SendSuccess(c, http.StatusOK, loginResp, "Login successful")
 }

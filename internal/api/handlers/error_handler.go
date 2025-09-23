@@ -9,7 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func handleServiceError(c *gin.Context, err error, defaultMessage string) {
+func handleServiceError(c *gin.Context, err error, defaultMessage ...string) {
+	message := ""
+
+	if len(defaultMessage) > 0 {
+		message = defaultMessage[0]
+	}
+
 	switch e := err.(type) {
 	case *services.ValidationError:
 		apiresponse.SendValidationError(c, fmt.Errorf(e.Message))
@@ -21,9 +27,9 @@ func handleServiceError(c *gin.Context, err error, defaultMessage string) {
 		apiresponse.SendUnauthorized(c, e.Message)
 	case *services.InternalError:
 		log.Printf("Internal service error: %v", e.Err)
-		apiresponse.SendInternalError(c, defaultMessage)
+		apiresponse.SendInternalError(c, message)
 	default:
 		log.Printf("Unknown service error: %v", err)
-		apiresponse.SendInternalError(c, defaultMessage)
+		apiresponse.SendInternalError(c, message)
 	}
 }
