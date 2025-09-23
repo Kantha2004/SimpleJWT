@@ -26,11 +26,6 @@ const docTemplate = `{
     "paths": {
         "/client/userlogin": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Authenticate and login a client user with username/password",
                 "consumes": [
                     "application/json"

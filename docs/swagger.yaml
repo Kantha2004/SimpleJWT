@@ -231,8 +231,6 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/apiresponse.ErrorResponse'
-      security:
-      - BearerAuth: []
       summary: Authenticate a client user
       tags:
       - Client
