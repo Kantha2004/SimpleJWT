@@ -29,34 +29,30 @@ func NewUserService(userRepo *repositories.UserRepository, jwtService *auth.JWTS
 }
 
 func (s *userService) CreateUser(req models.CreateUser) (*models.CreateUserResponse, error) {
-	// Check if username exists
+
 	if exists, err := s.userRepo.UserNameExists(req.Username); err != nil {
 		return nil, NewInternalError("Failed to validate username", err)
 	} else if exists {
 		return nil, NewConflictError("Username already exists")
 	}
 
-	// Check if email exists
 	if exists, err := s.userRepo.EmailExists(req.Email); err != nil {
 		return nil, NewInternalError("Failed to validate email", err)
 	} else if exists {
 		return nil, NewConflictError("Email already exists")
 	}
 
-	// Hash password
 	hashedPassword, err := auth.HashPassword(req.Password)
 	if err != nil {
 		return nil, NewInternalError("Failed to process password", err)
 	}
 
-	// Create user model
 	user := &models.AdminUser{
 		Username:     req.Username,
 		Email:        req.Email,
 		PasswordHash: hashedPassword,
 	}
 
-	// Save user
 	userID, err := s.userRepo.CreateUser(user)
 	if err != nil {
 		return nil, NewInternalError("Failed to create user", err)
@@ -70,24 +66,21 @@ func (s *userService) CreateUser(req models.CreateUser) (*models.CreateUserRespo
 }
 
 func (s *userService) AuthenticateUser(req models.LoginRequest) (*models.LoginResponse, error) {
-	// Get user by username
+
 	user, err := s.userRepo.GetUserByUsername(req.Username)
 	if err != nil {
 		return nil, NewInternalError("Authentication failed", err)
 	}
 
-	// Check user existence and password
 	if user == nil || !auth.CheckPassword(user.PasswordHash, req.Password) {
 		return nil, NewUnauthorizedError("Invalid username or password")
 	}
 
-	// Generate JWT token
 	token, err := s.jwtService.CreateToken(user.ID)
 	if err != nil {
 		return nil, NewInternalError("Authentication failed", err)
 	}
 
-	// Build response
 	expiresAt := time.Now().Add(time.Hour * 24)
 	return &models.LoginResponse{
 		Token:     token,

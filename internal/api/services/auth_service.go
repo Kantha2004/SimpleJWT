@@ -21,13 +21,11 @@ func NewAuthService(userService UserService) AuthService {
 }
 
 func (s *authService) ValidateUserFromContext(c *gin.Context) (*models.AdminUser, bool) {
-	// Extract user ID from context
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		return nil, false
 	}
 
-	// Validate user existence
 	user, err := s.userService.ValidateUser(userID)
 	if err != nil {
 		return nil, false

@@ -36,16 +36,13 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies) {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	// Initialize services
 	userRepo := repositories.NewUserRepository(deps.DB)
 	clientRepo := repositories.NewClientRepository(deps.DB)
 
-	// Initialize services with dependencies
 	userService := services.NewUserService(userRepo, deps.JWTService)
 	clientService := services.NewClientService(clientRepo, deps.DB)
 	authService := services.NewAuthService(userService)
 
-	// Initialize handlers with services
 	userHandler := handlers.NewUserHandler(userService, authService)
 	clientHandler := handlers.NewClientHandler(clientService, authService)
 

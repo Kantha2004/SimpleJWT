@@ -85,7 +85,6 @@ func (d *ClientUserHandler) CreateClientUser(c *gin.Context) {
 // @Failure 404 {object} apiresponse.ErrorResponse "Client not found"
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /client/userlogin [post]
-// @Security BearerAuth
 func (d *ClientUserHandler) ClientUserLogin(c *gin.Context) {
 	var req models.ClientUserLoginRequest
 

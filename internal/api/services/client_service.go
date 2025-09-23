@@ -30,7 +30,6 @@ func NewClientService(
 }
 
 func (s *clientService) CreateClient(req models.CreateClient, user *models.AdminUser) (*models.CreateClientReponse, error) {
-	// Check if client name already exists for this user
 	existing, err := s.clientRepo.GetClientByNameForUser(req.ClientName, user.ID)
 	if err != nil {
 		return nil, NewInternalError("Error validating client name", err)
@@ -39,23 +38,19 @@ func (s *clientService) CreateClient(req models.CreateClient, user *models.Admin
 		return nil, NewConflictError("Client name already exists")
 	}
 
-	// Generate schema name
 	schemaName := fmt.Sprintf("%s_%s_client", user.Username, req.ClientName)
 
-	// Create client model
 	client := &models.Client{
 		ClientName: req.ClientName,
 		UserID:     user.ID,
 		SchemaName: schemaName,
 	}
 
-	// Create client record
 	clientSecret, err := s.clientRepo.CreateClient(client)
 	if err != nil {
 		return nil, NewInternalError("Failed to create client", err)
 	}
 
-	// Initialize client database schema
 	if err := s.db.CreateClientSchema(schemaName); err != nil {
 		return nil, NewInternalError("Failed to initialize client schema", err)
 	}

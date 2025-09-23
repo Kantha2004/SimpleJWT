@@ -34,7 +34,7 @@ func NewClientUserService(
 
 // CreateUser handles the business logic for creating a new client user
 func (s *clientUserService) CreateUser(req models.CreateClientUser) (*models.ClientUser, error) {
-	// Validate client exists
+
 	client, err := s.clientRepo.GetClientById(req.ClientID)
 	if err != nil {
 		return nil, NewInternalError("Failed to validate client", err)
@@ -43,34 +43,29 @@ func (s *clientUserService) CreateUser(req models.CreateClientUser) (*models.Cli
 		return nil, NewNotFoundError("Client not found")
 	}
 
-	// Check for existing username
 	if exists, err := s.clientUserRepo.ClientUserNameExists(req.Username); err != nil {
 		return nil, NewInternalError("Failed to validate username", err)
 	} else if exists {
 		return nil, NewConflictError("Username already exists")
 	}
 
-	// Check for existing email
 	if exists, err := s.clientUserRepo.ClientUserEmailExists(req.Email); err != nil {
 		return nil, NewInternalError("Failed to validate email", err)
 	} else if exists {
 		return nil, NewConflictError("Email already exists")
 	}
 
-	// Hash password
 	hashedPassword, err := auth.HashPassword(req.Password)
 	if err != nil {
 		return nil, NewInternalError("Failed to process password", err)
 	}
 
-	// Create user model
 	userModel := &models.ClientUser{
 		Username:     req.Username,
 		Email:        req.Email,
 		PasswordHash: hashedPassword,
 	}
 
-	// Save user
 	user, err := s.clientUserRepo.CreateClientUser(userModel)
 
 	if err != nil {
@@ -82,7 +77,7 @@ func (s *clientUserService) CreateUser(req models.CreateClientUser) (*models.Cli
 
 // AuthenticateUser handles user authentication and token generation
 func (s *clientUserService) AuthenticateUser(req models.ClientUserLoginRequest) (*models.LoginResponse, error) {
-	// Validate client
+
 	client, err := s.clientRepo.GetClientBySecret(req.ClientSecret)
 	if err != nil {
 		return nil, NewInternalError("Failed to validate client", err)
@@ -91,7 +86,6 @@ func (s *clientUserService) AuthenticateUser(req models.ClientUserLoginRequest) 
 		return nil, NewNotFoundError("Client not found")
 	}
 
-	// Get user by username
 	user, err := s.clientUserRepo.GetClientUserByUsername(req.Username)
 	if err != nil {
 		return nil, NewInternalError("Failed to validate user", err)
@@ -100,18 +94,15 @@ func (s *clientUserService) AuthenticateUser(req models.ClientUserLoginRequest) 
 		return nil, NewUnauthorizedError("Invalid username or password")
 	}
 
-	// Verify password
 	if !auth.CheckPassword(user.PasswordHash, req.Password) {
 		return nil, NewUnauthorizedError("Invalid username or password")
 	}
 
-	// Generate token
 	token, err := s.jwtService.CreateToken(user.ID)
 	if err != nil {
 		return nil, NewInternalError("Unable to generate authentication token", err)
 	}
 
-	// Build response
 	userInfo := models.UserInfo{
 		ID:       user.ID,
 		Username: user.Username,
