@@ -8,3 +8,12 @@ type CreateClientUser struct {
 	CreateUser
 	ClientID uint `json:"client_id" binding:"required" example:"0"`
 }
+
+type ClientRequest struct {
+	ClientSecret string `json:"client_secret" binding:"required" example:"asdadsdasdsadasd"`
+}
+
+type ClientUserLoginRequest struct {
+	LoginRequest
+	ClientRequest
+}
