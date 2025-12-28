@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	apiresponse "github.com/Kantha2004/SimpleJWT/internal/apiResponse"
-	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
+	"github.com/Kantha2004/SimpleJWT/internal/repositories"
 	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +20,7 @@ const (
 // ValidateUser fetches and validates user existence
 // Returns the user if found, otherwise returns an error
 func (d *Dependencies) ValidateUser(userID uint) (*models.AdminUser, error) {
-	userRepo := db.NewUserRepository(d.DB)
+	userRepo := repositories.NewUserRepository(d.DB)
 	user, err := userRepo.GetUserByID(userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch user: %w", err)
@@ -38,7 +38,6 @@ func (d *Dependencies) ValidateUser(userID uint) (*models.AdminUser, error) {
 // ValidateUserFromContext extracts user ID from context, validates the user,
 // and handles HTTP error responses automatically
 func (d *Dependencies) ValidateUserFromContext(c *gin.Context) (*models.AdminUser, bool) {
-	// Extract and validate user ID from context
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		log.Printf("Failed to extract user ID from context: %v", err)
@@ -46,7 +45,6 @@ func (d *Dependencies) ValidateUserFromContext(c *gin.Context) (*models.AdminUse
 		return nil, false
 	}
 
-	// Validate user existence
 	user, err := d.ValidateUser(userID)
 	if err != nil {
 		d.handleUserValidationError(c, err)
@@ -60,13 +58,11 @@ func (d *Dependencies) ValidateUserFromContext(c *gin.Context) (*models.AdminUse
 func (d *Dependencies) handleUserValidationError(c *gin.Context, err error) {
 	log.Printf("User validation failed: %v", err)
 
-	// Check for specific error types
 	if errors.Is(err, errors.New(USER_NOT_FOUND)) ||
 		strings.Contains(strings.ToLower(err.Error()), USER_NOT_FOUND) {
 		apiresponse.SendUnauthorized(c, "Invalid user")
 		return
 	}
 
-	// Default to internal server error for other validation failures
 	apiresponse.SendInternalError(c, "Authentication failed")
 }

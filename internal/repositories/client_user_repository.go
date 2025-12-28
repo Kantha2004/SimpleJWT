@@ -1,17 +1,23 @@
-package db
+package repositories
 
 import (
 	"errors"
 
+	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
 	"gorm.io/gorm"
+)
+
+const (
+	CLIENT_USER_TABLE   = "users"
+	CLIENT_CONFIG_TABLE = "configs"
 )
 
 type ClientUserRepository struct {
 	db *gorm.DB
 }
 
-func NewClientUserRepository(db *Database, schemaName string) *ClientUserRepository {
+func NewClientUserRepository(db *db.Database, schemaName string) *ClientUserRepository {
 	return &ClientUserRepository{db: db.TableWithSchema(schemaName, CLIENT_USER_TABLE)}
 }
 
