@@ -9,7 +9,6 @@ import (
 	"github.com/Kantha2004/SimpleJWT/internal/db"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
 	"github.com/Kantha2004/SimpleJWT/internal/repositories"
-	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,13 +36,10 @@ func NewClientUserHandler(db *db.Database, authService *auth.JWTService) *Client
 // @Failure 409 {object} apiresponse.ErrorResponse "Conflict - username or email already exists"
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /protected/createClientUser [post]
+// @Router /protected/createClientUser [post]
 // @Security BearerAuth
-func (d *ClientUserHandler) CreateClientUser(c *gin.Context) {
-	var req models.CreateClientUser
-
-	if ok := utils.VerifyRequestModel(c, &req); !ok {
-		return
-	}
+func (d *ClientUserHandler) CreateClientUser(c *gin.Context, req models.CreateClientUser) {
+	// Request is already validated by WithBody wrapper
 
 	clientRepo := repositories.NewClientRepository(d.DB)
 
@@ -85,12 +81,8 @@ func (d *ClientUserHandler) CreateClientUser(c *gin.Context) {
 // @Failure 404 {object} apiresponse.ErrorResponse "Client not found"
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /client/userlogin [post]
-func (d *ClientUserHandler) ClientUserLogin(c *gin.Context) {
-	var req models.ClientUserLoginRequest
-
-	if ok := utils.VerifyRequestModel(c, &req); !ok {
-		return
-	}
+func (d *ClientUserHandler) ClientUserLogin(c *gin.Context, req models.ClientUserLoginRequest) {
+	// Request is already validated by WithBody wrapper
 
 	clientRepo := repositories.NewClientRepository(d.DB)
 

@@ -8,6 +8,7 @@ import (
 	"github.com/Kantha2004/SimpleJWT/internal/api/services"
 	apiresponse "github.com/Kantha2004/SimpleJWT/internal/apiResponse"
 	"github.com/Kantha2004/SimpleJWT/internal/repositories"
+	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -54,14 +55,14 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies) {
 		v1.GET("/ping", PingHandler)
 
 		// POST Methods
-		v1.POST("/createUser", userHandler.CreateUser)
-		v1.POST("/login", userHandler.Login)
+		v1.POST("/createUser", utils.WithBody(userHandler.CreateUser))
+		v1.POST("/login", utils.WithBody(userHandler.Login))
 	}
 
 	// Client routes (public)
 	client := router.Group("api/v1/client")
 	{
-		client.POST("/userlogin", clientUserHandler.ClientUserLogin)
+		client.POST("/userlogin", utils.WithBody(clientUserHandler.ClientUserLogin))
 	}
 
 	// Protected routes
@@ -73,7 +74,7 @@ func SetupGinRoutes(router *gin.Engine, deps *Dependencies) {
 		protected.GET("/getAllClients", clientHandler.GetAllClients)
 
 		// POST Methods
-		protected.POST("/createClient", clientHandler.CreateClient)
-		protected.POST("/createClientUser", clientUserHandler.CreateClientUser)
+		protected.POST("/createClient", utils.WithBody(clientHandler.CreateClient))
+		protected.POST("/createClientUser", utils.WithBody(clientUserHandler.CreateClientUser))
 	}
 }

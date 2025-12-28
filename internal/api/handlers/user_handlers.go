@@ -6,7 +6,6 @@ import (
 	"github.com/Kantha2004/SimpleJWT/internal/api/services"
 	apiresponse "github.com/Kantha2004/SimpleJWT/internal/apiResponse"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
-	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -34,11 +33,8 @@ func NewUserHandler(userService services.UserService, authService services.AuthS
 // @Failure 409 {object} apiresponse.ErrorResponse "Conflict - username or email already exists"
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /createUser [post]
-func (h *UserHandler) CreateUser(c *gin.Context) {
-	var req models.CreateUser
-	if !utils.VerifyRequestModel(c, &req) {
-		return
-	}
+func (h *UserHandler) CreateUser(c *gin.Context, req models.CreateUser) {
+	// Request is already validated by WithBody wrapper
 
 	user, err := h.userService.CreateUser(req)
 	if err != nil {
@@ -61,11 +57,8 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Failure 401 {object} apiresponse.ErrorResponse "Invalid credentials"
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /login [post]
-func (h *UserHandler) Login(c *gin.Context) {
-	var req models.LoginRequest
-	if !utils.VerifyRequestModel(c, &req) {
-		return
-	}
+func (h *UserHandler) Login(c *gin.Context, req models.LoginRequest) {
+	// Request is already validated by WithBody wrapper
 
 	response, err := h.userService.AuthenticateUser(req)
 	if err != nil {

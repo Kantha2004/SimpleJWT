@@ -7,7 +7,6 @@ import (
 	"github.com/Kantha2004/SimpleJWT/internal/api/services"
 	apiresponse "github.com/Kantha2004/SimpleJWT/internal/apiResponse"
 	"github.com/Kantha2004/SimpleJWT/internal/models"
-	"github.com/Kantha2004/SimpleJWT/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,7 +22,7 @@ func NewClientHandler(clientService services.ClientService, authService services
 	}
 }
 
-// CreateUser godoc
+// CreateClient godoc
 // @Summary Create a new user
 // @Description Create a new user account in the system
 // @Tags Client
@@ -36,11 +35,8 @@ func NewClientHandler(clientService services.ClientService, authService services
 // @Failure 500 {object} apiresponse.ErrorResponse "Internal server error"
 // @Router /protected/createClient [post]
 // @Security BearerAuth
-func (h *ClientHandler) CreateClient(c *gin.Context) {
-	var req models.CreateClient
-	if !utils.VerifyRequestModel(c, &req) {
-		return
-	}
+func (h *ClientHandler) CreateClient(c *gin.Context, req models.CreateClient) {
+	// Request is already validated by WithBody wrapper
 
 	user, ok := h.authService.ValidateUserFromContext(c)
 	if !ok {
